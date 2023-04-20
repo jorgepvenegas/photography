@@ -28,14 +28,17 @@ export default function Home({ page }: PageProps) {
 
       <main className="min-h-screen flex items-center">
         <div className="mx-auto max-w-screen-2xl p-5 xl:px-10">
-          <div className="grid gap-3 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
-            <div className="">
-              <Link href="/prismic">
-                <h3 className="p-3 rounded-sm text-slate-800 font-normal font-mono text-sm hover:bg-slate-200">
-                  Prismic
-                </h3>
-              </Link>
-            </div>
+          <div className="flex gap-3">
+            <Link href="/prismic">
+              <h3 className="p-3 rounded-sm text-slate-800 font-normal font-mono text-sm hover:bg-slate-200">
+                Prismic
+              </h3>
+            </Link>
+            <Link href="/datocms">
+              <h3 className="p-3 rounded-sm text-slate-800 font-normal font-mono text-sm hover:bg-slate-200">
+                DatoCMS
+              </h3>
+            </Link>
           </div>
         </div>
       </main>
