@@ -14,6 +14,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "www.datocms-assets.com",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
     ],
   },
   typescript: {

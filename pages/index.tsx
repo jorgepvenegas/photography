@@ -39,6 +39,11 @@ export default function Home({ page }: PageProps) {
                 DatoCMS
               </h3>
             </Link>
+            <Link href="/cloudinary">
+              <h3 className="p-3 rounded-sm text-slate-800 font-normal font-mono text-sm hover:bg-slate-200">
+                Cloudinary
+              </h3>
+            </Link>
           </div>
         </div>
       </main>
