@@ -27,7 +27,7 @@ export default function Home({ page }: PageProps) {
       </Head>
 
       <main className={styles.main}>
-        <h1 className={styles.title}>
+        <h1 className="text-3xl">
           Photos by <a href="https://jorgepvenegas.com">Jorge</a>
         </h1>
 
