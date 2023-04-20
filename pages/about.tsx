@@ -2,8 +2,12 @@ import { createClient } from "../prismicio";
 import Head from "next/head";
 import Image from "next/image";
 import sm from "./../sm.json";
+import { CreateClientConfig } from "@prismicio/next";
+import type { InferGetStaticPropsType, GetStaticPropsContext } from "next";
 
-export async function getStaticProps({ previewData }) {
+type PageProps = InferGetStaticPropsType<typeof getStaticProps>;
+
+export async function getStaticProps({ previewData }: GetStaticPropsContext) {
   const client = createClient({ previewData });
 
   const page = await client.getByType("photography");
@@ -14,7 +18,7 @@ export async function getStaticProps({ previewData }) {
   };
 }
 
-export default function About({ page }) {
+export default function About({ page }: PageProps) {
   return (
     <div>
       <h1 className="text-4xl">Photos</h1>
