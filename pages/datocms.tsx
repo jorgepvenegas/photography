@@ -1,29 +1,50 @@
 import Head from "next/head";
 import Image from "next/image";
-import type { InferGetStaticPropsType, GetStaticPropsContext } from "next";
+import type { InferGetStaticPropsType } from "next";
 import { request } from "../lib/datocms";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import Modal from "react-modal";
+
+const customStyles = {
+  content: {
+    top: "50%",
+    left: "50%",
+    right: "auto",
+    bottom: "auto",
+    marginRight: "-50%",
+    transform: "translate(-50%, -50%)",
+    padding: "15px",
+    background: "none",
+    border: 0,
+  },
+};
+
+Modal.setAppElement("#__next");
 
 type PageProps = InferGetStaticPropsType<typeof getStaticProps>;
 
 const PHOTO_QUERY = `query images {
   allUploads (filter: { tags:{ eq: "x100v" }}) {
-    blurUpThumb
-    url(imgixParams: {})
     id
-    exifInfo
     alt
+    blurUpThumb
+    exifInfo
     title
+    url(imgixParams: {})
   }
 }`;
 
 export async function getStaticProps() {
+  let allUploads: Array<PhotoProps> = [];
   const data = await request({
     query: PHOTO_QUERY,
     variables: { limit: 10 },
   });
+
+  allUploads = data.allUploads;
+
   return {
-    props: { data },
+    props: { allUploads },
   };
 }
 
@@ -37,18 +58,18 @@ type EXIFInfoProps = {
 };
 
 type PhotoProps = {
+  id: string;
+  alt: string;
+  blurUpThumb: string;
+  exifInfo: EXIFInfoProps;
   title: string;
-  iso: number;
-  fNumber: number;
-  flashMode: number;
-  focalLength: number;
-  exposureTime: number;
+  url: string;
 };
 
 function EXIFInfo(props: EXIFInfoProps) {
   return (
-    <div className="backdrop-blur bg-black/50 rounded-b-lg text-gray-100 font-mono p-3">
-      <div className="table text-xs">
+    <div className="text-gray-100 font-mono p-3">
+      <div className="table w-full text-xs">
         <div className="table-row">
           <div className="table-cell">ISO:</div>
           <div className="table-cell">{props.iso}</div>
@@ -76,7 +97,6 @@ function EXIFInfo(props: EXIFInfoProps) {
   );
 }
 
-// TODO: Oh no so ugly.
 function Photo({ photo: p, onPhotoClick }: any) {
   const [hovered, setHovered] = useState(false);
 
@@ -90,11 +110,12 @@ function Photo({ photo: p, onPhotoClick }: any) {
     >
       <Image
         src={p.url}
-        alt={p.filename}
+        alt={p.title || "Photo by Jorge Venegas"}
         width={720}
         placeholder="blur"
         blurDataURL={p.blurUpThumb}
-        height={200}
+        height={600}
+        loading="lazy"
         sizes="(max-width: 640px) 100vw,
                     (max-width: 1280px) 50vw,
                     (max-width: 1536px) 33vw,
@@ -111,49 +132,49 @@ function Photo({ photo: p, onPhotoClick }: any) {
 
 type HighlightProps = {
   photo: PhotoProps;
-  onClose: () => void;
+  onClick: () => void;
 };
 
-function Highlight({ photo: p, onClose }: HighlightProps) {
+function Highlight({ photo: p }: HighlightProps) {
   return (
-    <div
-      className="flex flex-col mb-10 h-5/6 items-center align-middle"
-      onClick={() => onClose()}
-    >
-      <div>
-        <Image
-          src={p.url}
-          alt={p.title}
-          width={720}
-          placeholder="blur"
-          blurDataURL={p.blurUpThumb}
-          height={200}
-          sizes="25vw"
-          style={{
-            objectFit: "cover",
-            transform: "translate3d(0, 0, 0)",
-          }}
-          className="h-5/6 rounded-t-lg brightness-100 transition hover:cursor-pointer"
-        />
-        <div className="h-1/6">
-          <EXIFInfo title={p.title} {...p.exifInfo} />
+    <div className="container w-fit mx-auto">
+      <Image
+        src={p.url}
+        alt={p.title || "Photo by Jorge Venegas"}
+        width={720}
+        placeholder="blur"
+        blurDataURL={p.blurUpThumb}
+        height={200}
+        sizes="25vw"
+        style={{
+          objectFit: "cover",
+          transform: "translate3d(0, 0, 0)",
+        }}
+        className="h-5/6 rounded-t-lg brightness-100 transition hover:cursor-pointer"
+      />
+      <div className="backdrop-blur bg-black/50 rounded-b-lg flex">
+        <div className="w-1/3">
+          <EXIFInfo {...p.exifInfo} />
         </div>
       </div>
     </div>
   );
 }
 
-export default function DatoCMSPage({ data }: PageProps) {
+export default function DatoCMSPage({ allUploads }: PageProps) {
   const [activePhoto, setActivePhoto] = useState<PhotoProps | null>(null);
+  const [modalIsOpen, setIsOpen] = useState(false);
 
   const onPhotoClick = (p: PhotoProps) => {
-    console.log("onPhotoClick", p);
     setActivePhoto(p);
+    setIsOpen(true);
   };
 
   const onClose = () => {
     setActivePhoto(null);
+    setIsOpen(false);
   };
+
   return (
     <div>
       <Head>
@@ -165,11 +186,20 @@ export default function DatoCMSPage({ data }: PageProps) {
       <main className="flex items-center">
         <div className="h-screen mx-auto max-w-screen-2xl p-5 xl:px-10">
           <h1 className="text-4xl pb-10 font-thin">Example with DatoCMS</h1>
-          {activePhoto && <Highlight photo={activePhoto} onClose={onClose} />}
+          {activePhoto && (
+            <Modal
+              isOpen={modalIsOpen}
+              onRequestClose={onClose}
+              style={customStyles}
+              contentLabel="Highlight"
+            >
+              <Highlight photo={activePhoto} onClick={onClose} />
+            </Modal>
+          )}
           <div className="grid gap-3 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
-            {data.allUploads.map((p, i) => {
-              return <Photo key={p.id} photo={p} onPhotoClick={onPhotoClick} />;
-            })}
+            {allUploads.map((p, i) => (
+              <Photo key={p.id} photo={p} onPhotoClick={onPhotoClick} />
+            ))}
           </div>
         </div>
       </main>
