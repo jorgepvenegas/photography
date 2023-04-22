@@ -30,12 +30,17 @@ const PHOTO_QUERY = `query images {
     blurUpThumb
     exifInfo
     title
+    width
+    height
     url(imgixParams: {})
+    responsiveImage {
+      sizes
+    }
   }
 }`;
 
 export async function getStaticProps() {
-  let allUploads: Array<PhotoProps> = [];
+  let allUploads: Array<Image> = [];
   const data = await request({
     query: PHOTO_QUERY,
     variables: { limit: 10 },
@@ -48,7 +53,7 @@ export async function getStaticProps() {
   };
 }
 
-type EXIFInfoProps = {
+type EXIFInfo = {
   title: string;
   iso: number;
   fNumber: number;
@@ -57,16 +62,23 @@ type EXIFInfoProps = {
   exposureTime: number;
 };
 
-type PhotoProps = {
+type ResponsiveImage = {
+  sizes: string;
+};
+
+type Image = {
   id: string;
   alt: string;
   blurUpThumb: string;
-  exifInfo: EXIFInfoProps;
+  exifInfo: EXIFInfo;
+  responsiveImage: ResponsiveImage;
   title: string;
+  width: number;
+  height: number;
   url: string;
 };
 
-function EXIFInfo(props: EXIFInfoProps) {
+function EXIFInfo(props: EXIFInfo) {
   return (
     <div className="text-gray-100 font-mono p-3">
       <div className="table w-full text-xs">
@@ -97,41 +109,38 @@ function EXIFInfo(props: EXIFInfoProps) {
   );
 }
 
-function Photo({ photo: p, onPhotoClick }: any) {
-  const [hovered, setHovered] = useState(false);
+type PhotoProps = {
+  photo: Image;
+  onPhotoClick: (p: Image) => void;
+};
 
+function Photo({ photo, onPhotoClick }: PhotoProps) {
+  // return <img src={`${photo.url}`} />;
   return (
-    <div
-      key={p.id}
-      className="relative"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={() => onPhotoClick(p)}
-    >
-      <Image
-        src={p.url}
-        alt={p.title || "Photo by Jorge Venegas"}
-        width={720}
-        placeholder="blur"
-        blurDataURL={p.blurUpThumb}
-        height={600}
-        loading="lazy"
-        sizes="(max-width: 640px) 100vw,
-                    (max-width: 1280px) 50vw,
-                    (max-width: 1536px) 33vw,
-                    25vw"
-        style={{
-          objectFit: "cover",
-          transform: "translate3d(0, 0, 0)",
-        }}
-        className="rounded-lg object-cover object-center brightness-100 transition hover:brightness-110 hover:cursor-pointer grow h-full"
-      />
-    </div>
+    <Image
+      key={photo.id}
+      src={`${photo.url}`}
+      alt={photo.title || "Photo by Jorge Venegas"}
+      onClick={() => onPhotoClick(photo)}
+      placeholder="blur"
+      blurDataURL={photo.blurUpThumb}
+      width={800}
+      height={800}
+      loading="lazy"
+      sizes=" (max-width: 768px) 500px,
+              (max-width: 1200px) 400px,
+              200px"
+      style={{
+        objectFit: "cover",
+        transform: "translate3d(0, 0, 0)",
+      }}
+      className="rounded-lg object-cover object-center brightness-100 transition hover:brightness-110 hover:cursor-pointer grow h-full mb-4"
+    />
   );
 }
 
 type HighlightProps = {
-  photo: PhotoProps;
+  photo: Image;
   onClick: () => void;
 };
 
@@ -162,10 +171,10 @@ function Highlight({ photo: p }: HighlightProps) {
 }
 
 export default function DatoCMSPage({ allUploads }: PageProps) {
-  const [activePhoto, setActivePhoto] = useState<PhotoProps | null>(null);
+  const [activePhoto, setActivePhoto] = useState<Image | null>(null);
   const [modalIsOpen, setIsOpen] = useState(false);
 
-  const onPhotoClick = (p: PhotoProps) => {
+  const onPhotoClick = (p: Image) => {
     setActivePhoto(p);
     setIsOpen(true);
   };
@@ -184,7 +193,7 @@ export default function DatoCMSPage({ allUploads }: PageProps) {
       </Head>
 
       <main className="flex items-center">
-        <div className="h-screen mx-auto max-w-screen-2xl p-5 xl:px-10">
+        <div className="mx-auto max-w-screen-2xl p-5 xl:px-10">
           <h1 className="text-4xl pb-10 font-thin">Example with DatoCMS</h1>
           {activePhoto && (
             <Modal
@@ -196,7 +205,7 @@ export default function DatoCMSPage({ allUploads }: PageProps) {
               <Highlight photo={activePhoto} onClick={onClose} />
             </Modal>
           )}
-          <div className="grid gap-3 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
+          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4">
             {allUploads.map((p, i) => (
               <Photo key={p.id} photo={p} onPhotoClick={onPhotoClick} />
             ))}
