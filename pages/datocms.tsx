@@ -124,12 +124,10 @@ function Photo({ photo, onPhotoClick }: PhotoProps) {
       onClick={() => onPhotoClick(photo)}
       placeholder="blur"
       blurDataURL={photo.blurUpThumb}
-      width={800}
-      height={800}
+      width={photo.height}
+      height={photo.width}
       loading="lazy"
-      sizes=" (max-width: 768px) 500px,
-              (max-width: 1200px) 400px,
-              200px"
+      sizes="40vw"
       style={{
         objectFit: "cover",
         transform: "translate3d(0, 0, 0)",
@@ -150,11 +148,11 @@ function Highlight({ photo: p }: HighlightProps) {
       <Image
         src={p.url}
         alt={p.title || "Photo by Jorge Venegas"}
-        width={720}
         placeholder="blur"
         blurDataURL={p.blurUpThumb}
-        height={200}
-        sizes="25vw"
+        width={p.width}
+        height={p.height}
+        sizes="50vw"
         style={{
           objectFit: "cover",
           transform: "translate3d(0, 0, 0)",
