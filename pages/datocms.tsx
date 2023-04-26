@@ -2,22 +2,8 @@ import Head from "next/head";
 import Image from "next/image";
 import type { InferGetStaticPropsType } from "next";
 import { request } from "../lib/datocms";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Modal from "react-modal";
-
-const customStyles = {
-  content: {
-    top: "50%",
-    left: "50%",
-    right: "auto",
-    bottom: "auto",
-    marginRight: "-50%",
-    transform: "translate(-50%, -50%)",
-    padding: "15px",
-    background: "none",
-    border: 0,
-  },
-};
 
 Modal.setAppElement("#__next");
 
@@ -47,6 +33,8 @@ export async function getStaticProps() {
   });
 
   allUploads = data.allUploads;
+
+  // allUploads = [allUploads[0], allUploads[1]];
 
   return {
     props: { allUploads },
@@ -127,7 +115,11 @@ function Photo({ photo, onPhotoClick }: PhotoProps) {
       width={photo.height}
       height={photo.width}
       loading="lazy"
-      sizes="40vw"
+      sizes="
+      (max-width: 640px) 50vw,
+      (max-width: 768px) 20vw,
+      (max-width: 1024px) 20vw,
+      20vw"
       style={{
         objectFit: "cover",
         transform: "translate3d(0, 0, 0)",
@@ -142,9 +134,9 @@ type HighlightProps = {
   onClick: () => void;
 };
 
-function Highlight({ photo: p }: HighlightProps) {
+function Highlight({ photo: p, onClick }: HighlightProps) {
   return (
-    <div className="container w-fit mx-auto">
+    <div className="container w-fit relative">
       <Image
         src={p.url}
         alt={p.title || "Photo by Jorge Venegas"}
@@ -154,16 +146,20 @@ function Highlight({ photo: p }: HighlightProps) {
         height={p.height}
         sizes="50vw"
         style={{
-          objectFit: "cover",
           transform: "translate3d(0, 0, 0)",
+          objectFit: "contain",
+          maxWidth: "100%",
+          maxHeight: "100%",
+          width: "100%",
+          height: "auto",
         }}
-        className="h-5/6 rounded-t-lg brightness-100 transition hover:cursor-pointer"
+        className="rounded-lg brightness-100 transition hover:cursor-pointer"
       />
-      <div className="backdrop-blur bg-black/50 rounded-b-lg flex">
-        <div className="w-1/3">
-          <EXIFInfo {...p.exifInfo} />
-        </div>
-      </div>
+      {/* <div className="h-1/6 backdrop-blur bg-black/50 rounded-b-lg flex">
+          <div className="w-1/3">
+            <EXIFInfo {...p.exifInfo} />
+          </div>
+        </div> */}
     </div>
   );
 }
@@ -197,8 +193,17 @@ export default function DatoCMSPage({ allUploads }: PageProps) {
             <Modal
               isOpen={modalIsOpen}
               onRequestClose={onClose}
-              style={customStyles}
               contentLabel="Highlight"
+              style={{
+                content: {
+                  top: "50%",
+                  left: "50%",
+                  right: "auto",
+                  bottom: "auto",
+                  marginRight: "-50%",
+                  transform: "translate(-50%, -50%)",
+                },
+              }}
             >
               <Highlight photo={activePhoto} onClick={onClose} />
             </Modal>
