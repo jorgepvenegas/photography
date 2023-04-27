@@ -198,7 +198,7 @@ export default function DatoCMSPage({ allUploads }: PageProps) {
         <div className="mx-auto max-w-screen-2xl p-5 xl:px-10">
           <h1 className="text-4xl pb-10 font-thin">Example with DatoCMS</h1>
           {activePhoto && <Highlight photo={activePhoto} onClick={onClose} />}
-          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {allUploads.map((p, i) => (
               <Photo key={p.id} photo={p} onPhotoClick={onPhotoClick} />
             ))}
