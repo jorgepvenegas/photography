@@ -2,10 +2,7 @@ import Head from "next/head";
 import Image from "next/image";
 import type { InferGetStaticPropsType } from "next";
 import { request } from "../lib/datocms";
-import { useEffect, useRef, useState } from "react";
-import Modal from "react-modal";
-
-Modal.setAppElement("#__next");
+import { useState } from "react";
 
 type PageProps = InferGetStaticPropsType<typeof getStaticProps>;
 
@@ -103,7 +100,6 @@ type PhotoProps = {
 };
 
 function Photo({ photo, onPhotoClick }: PhotoProps) {
-  // return <img src={`${photo.url}`} />;
   return (
     <Image
       key={photo.id}
@@ -135,31 +131,43 @@ type HighlightProps = {
 };
 
 function Highlight({ photo: p, onClick }: HighlightProps) {
+  const [hovered, setHovered] = useState(false);
+
+  const toggleHovered = () => {
+    setHovered((hovered) => !hovered);
+  };
+
   return (
-    <div className="container w-fit relative">
-      <Image
-        src={p.url}
-        alt={p.title || "Photo by Jorge Venegas"}
-        placeholder="blur"
-        blurDataURL={p.blurUpThumb}
-        width={p.width}
-        height={p.height}
-        sizes="50vw"
-        style={{
-          transform: "translate3d(0, 0, 0)",
-          objectFit: "contain",
-          maxWidth: "100%",
-          maxHeight: "100%",
-          width: "100%",
-          height: "auto",
-        }}
-        className="rounded-lg brightness-100 transition hover:cursor-pointer"
-      />
-      {/* <div className="h-1/6 backdrop-blur bg-black/50 rounded-b-lg flex">
-          <div className="w-1/3">
-            <EXIFInfo {...p.exifInfo} />
+    <div
+      className="fixed flex backdrop-blur bg-black/50 z-10 h-full w-full left-0 top-0 overflow-y-auto flex-wrap content-center justify-center"
+      onClick={() => onClick()}
+    >
+      <div
+        className="h-5/6 w-fit bg-white relative"
+        onMouseEnter={toggleHovered}
+        onMouseLeave={toggleHovered}
+      >
+        <Image
+          src={p.url}
+          alt={p.title || "Photo by Jorge Venegas"}
+          placeholder="blur"
+          blurDataURL={p.blurUpThumb}
+          width={p.width}
+          height={p.height}
+          style={{
+            width: "auto",
+            height: "100%",
+          }}
+          className="p-3"
+        />
+        {hovered && (
+          <div className="h-fit absolute left-0 right-0 bottom-0 backdrop-blur bg-black/50 flex m-3">
+            <div className="w-1/3">
+              <EXIFInfo {...p.exifInfo} />
+            </div>
           </div>
-        </div> */}
+        )}
+      </div>
     </div>
   );
 }
@@ -189,25 +197,7 @@ export default function DatoCMSPage({ allUploads }: PageProps) {
       <main className="flex items-center">
         <div className="mx-auto max-w-screen-2xl p-5 xl:px-10">
           <h1 className="text-4xl pb-10 font-thin">Example with DatoCMS</h1>
-          {activePhoto && (
-            <Modal
-              isOpen={modalIsOpen}
-              onRequestClose={onClose}
-              contentLabel="Highlight"
-              style={{
-                content: {
-                  top: "50%",
-                  left: "50%",
-                  right: "auto",
-                  bottom: "auto",
-                  marginRight: "-50%",
-                  transform: "translate(-50%, -50%)",
-                },
-              }}
-            >
-              <Highlight photo={activePhoto} onClick={onClose} />
-            </Modal>
-          )}
+          {activePhoto && <Highlight photo={activePhoto} onClick={onClose} />}
           <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4">
             {allUploads.map((p, i) => (
               <Photo key={p.id} photo={p} onPhotoClick={onPhotoClick} />
